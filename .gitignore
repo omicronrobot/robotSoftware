@@ -31,4 +31,7 @@
 *.out
 *.app
 
+# Secret files
+secrets.h
+
 # Vscode files
