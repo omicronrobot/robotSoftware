@@ -3,24 +3,20 @@
 
 #include <Arduino.h>
 #include <WiFi101.h>
+#include "secrets.h"
 
-#define WLAN_SSID "WIFI_SSID"
-#define WLAN_PASS "WIFI_PASSWORD"
-
-#define MF_SERVER "http://omicronrobot.rodneyosodo.com"
-#define MF_SERVERPORT 1883
-#define MF_USERNAME "TO_SETUP"
-#define MF_KEY "TO_SETUP"
-
-char ssid[] = WLAN_SSID;         // your network SSID (name)
-char pass[] = WLAN_PASS;         // your network password (use for WPA, or use as key for WEP)
+char ssid[] = WLAN_SSID;         // your wifi network SSID (name)
+char pass[] = WLAN_PASS;         // your wifi network password (use for WPA, or use as key for WEP)
 int wifistatus = WL_IDLE_STATUS; // the WiFi radio's status
+
+String PUBTOPIC = "channels/" + CHANNEL_ID + "/messages";
+String SUBTOPIC = "channels/" + CHANNEL_ID + "/messages/subscribe";
 
 #define DEBUG 2
 #if DEBUG == 1
-// #define debug(x) Serial.print(x)
-// #define debugln(x) Serial.println(x)
-// #define debugf(x, y) Serial.printf(x, y)
+#define debug(x) Serial.print(x)
+#define debugln(x) Serial.println(x)
+#define debugf(x, y) Serial.printf(x, y)
 #else
 #define debug(x)
 #define debugln(x)
