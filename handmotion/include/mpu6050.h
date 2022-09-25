@@ -22,8 +22,8 @@ public:
     // It prints out the sensorData on the console
     void PrintData();
 
-    // SendData sends the sensorData over wifi using mqtt protocol
-    void SendData();
+    // GetData gets the sensorData to be sent over wifi using mqtt protocol
+    Data GetData();
 
     // getPitch gets the pitch of the handmotion sensor
     float getPitch();

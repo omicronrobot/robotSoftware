@@ -3,7 +3,6 @@
 
 #include "mpu6050.h"
 #include "defs.h"
-#include "functions.h"
 
 #if I2CDEV_IMPLEMENTATION == I2CDEV_ARDUINO_WIRE
 #include "Wire.h"
@@ -111,8 +110,8 @@ void SensorReadings::PrintData()
 	debugln();
 }
 
-void SensorReadings::SendData() {
-	SendMQTTData(sensorData);
+Data SensorReadings::GetData() {
+	return sensorData;
 }
 
 float SensorReadings::getPitch() { return sensorData.pitch; }
