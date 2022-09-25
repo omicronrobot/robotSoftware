@@ -52,7 +52,7 @@ void WifiConn::Connect()
     while (wifistatus != WL_CONNECTED)
     {
         debug("ATTEMPTING TO CONNECT TO WPA SSID: ");
-        debugln(ssid);
+        debugln(WLAN_SSID);
         // Connect to WPA/WPA2 network:
         wifistatus = WiFi.begin(ssid, pass);
         while (WiFi.status() != WL_CONNECTED)

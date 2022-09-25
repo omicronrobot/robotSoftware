@@ -2,15 +2,15 @@
 #define DEFINITIONS_H
 
 #include <Arduino.h>
-#include <WiFi101.h>
+#include "ESP8266WiFi.h"
 #include "secrets.h"
 
 char ssid[] = WLAN_SSID;         // your wifi network SSID (name)
 char pass[] = WLAN_PASS;         // your wifi network password (use for WPA, or use as key for WEP)
 int wifistatus = WL_IDLE_STATUS; // the WiFi radio's status
 
-String PUBTOPIC = "channels/" + CHANNEL_ID + "/messages";
-String SUBTOPIC = "channels/" + CHANNEL_ID + "/messages/subscribe";
+String PUBTOPIC = "channels/CHANNEL_ID/messages";
+String SUBTOPIC = "channels/CHANNEL_ID/messages/subscribe";
 
 #define DEBUG 2
 #if DEBUG == 1
