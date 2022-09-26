@@ -1,0 +1,48 @@
+version: "3.7"
+
+networks:
+  docker_omicron-base-net:
+    external: true
+
+volumes:
+  omicron-postgres-writer-volume:
+
+services:
+  postgres:
+    image: postgres:13.3-alpine
+    container_name: omicron-postgres
+    restart: on-failure
+    environment:
+      POSTGRES_USER: ${OR_POSTGRES_WRITER_DB_USER}
+      POSTGRES_PASSWORD: ${OR_POSTGRES_WRITER_DB_PASS}
+      POSTGRES_DB: ${OR_POSTGRES_WRITER_DB}
+    networks:
+      - docker_omicron-base-net
+    volumes:
+      - omicron-postgres-writer-volume:/var/lib/postgresql/data
+
+  postgres-writer:
+    image: mainflux/postgres-writer:${OR_RELEASE_TAG}
+    container_name: omicron-postgres-writer
+    depends_on:
+      - postgres
+    restart: on-failure
+    environment:
+      MF_BROKER_URL: ${OR_BROKER_URL}
+      MF_POSTGRES_WRITER_LOG_LEVEL: ${OR_POSTGRES_WRITER_LOG_LEVEL}
+      MF_POSTGRES_WRITER_PORT: ${OR_POSTGRES_WRITER_PORT}
+      MF_POSTGRES_WRITER_DB_HOST: postgres
+      MF_POSTGRES_WRITER_DB_PORT: ${OR_POSTGRES_WRITER_DB_PORT}
+      MF_POSTGRES_WRITER_DB_USER: ${OR_POSTGRES_WRITER_DB_USER}
+      MF_POSTGRES_WRITER_DB_PASS: ${OR_POSTGRES_WRITER_DB_PASS}
+      MF_POSTGRES_WRITER_DB: ${OR_POSTGRES_WRITER_DB}
+      MF_POSTGRES_WRITER_DB_SSL_MODE: ${OR_POSTGRES_WRITER_DB_SSL_MODE}
+      MF_POSTGRES_WRITER_DB_SSL_CERT: ${OR_POSTGRES_WRITER_DB_SSL_CERT}
+      MF_POSTGRES_WRITER_DB_SSL_KEY: ${OR_POSTGRES_WRITER_DB_SSL_KEY}
+      MF_POSTGRES_WRITER_DB_SSL_ROOT_CERT: ${OR_POSTGRES_WRITER_DB_SSL_ROOT_CERT}
+    ports:
+      - ${OR_POSTGRES_WRITER_PORT}:${OR_POSTGRES_WRITER_PORT}
+    networks:
+      - docker_omicron-base-net
+    volumes:
+      - ./config.toml:/config.toml

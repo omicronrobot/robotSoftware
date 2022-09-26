@@ -1,0 +1,32 @@
+version: "3.7"
+
+networks:
+  docker_omicron-base-net:
+    external: true
+
+services:
+  influxdb-reader:
+    image: mainflux/influxdb-reader:${OR_RELEASE_TAG}
+    container_name: omicron-influxdb-reader
+    restart: on-failure
+    environment:
+      MF_INFLUX_READER_LOG_LEVEL: debug
+      MF_INFLUX_READER_PORT: ${OR_INFLUX_READER_PORT}
+      MF_INFLUXDB_DB: ${OR_INFLUXDB_DB}
+      MF_INFLUXDB_HOST: omicron-influxdb
+      MF_INFLUXDB_PORT: ${OR_INFLUXDB_PORT}
+      MF_INFLUXDB_ADMIN_USER: ${OR_INFLUXDB_ADMIN_USER}
+      MF_INFLUXDB_ADMIN_PASSWORD: ${OR_INFLUXDB_ADMIN_PASSWORD}
+      MF_INFLUX_READER_SERVER_CERT: ${OR_INFLUX_READER_SERVER_CERT}
+      MF_INFLUX_READER_SERVER_KEY: ${OR_INFLUX_READER_SERVER_KEY}
+      MF_JAEGER_URL: ${OR_JAEGER_URL}
+      MF_THINGS_AUTH_GRPC_URL: ${OR_THINGS_AUTH_GRPC_URL}
+      MF_THINGS_AUTH_GRPC_TIMEOUT: ${OR_THINGS_AUTH_GRPC_TIMEOUT}
+      MF_AUTH_GRPC_URL: ${OR_AUTH_GRPC_URL}
+      MF_AUTH_GRPC_TIMEOUT : ${OR_AUTH_GRPC_TIMEOUT}
+    ports:
+      - ${OR_INFLUX_READER_PORT}:${OR_INFLUX_READER_PORT}
+    networks:
+      - docker_omicron-base-net
+    volumes:
+      - ../../ssl/certs:/etc/ssl/certs
