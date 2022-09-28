@@ -1,13 +1,16 @@
-BIN = arm-none-eabi-objcopy
-STL = st-flash
+ESPTOOL = esptool.py
+FFLAGS = --chip esp32 --port /dev/ttyUSB0
+BFLAG = --baud 460800
 
 clean:
-	rm -f .pio/build/genericSTM32F103C8/firmware.elf *.bin
+	rm -f .pio/build/esp12e/firmware.*
+
+build:
+	pio run
 
 flash: clean
 	pio run
-	$(BIN) -O binary .pio/build/genericSTM32F103C8/firmware.elf app.bin
-	$(STL) write app.bin 0x8000000
+	$(ESPTOOL) $(FFLAGS) $(BFLAG) write_flash --flash_size=detect 0 .pio/build/esp12e/firmware.bin
 
 erase:
-	$(STL) erase
+	$(ESPTOOL) $(FFLAGS) erase_flash

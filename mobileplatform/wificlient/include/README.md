@@ -1,5 +1,27 @@
+# Include
 
 This directory is intended for project header files.
+
+## Setup
+
+Create a `secrets.h` file which holds your valid credentials from the `examplesecrets.h` file.
+
+## Structure
+
+```bash
+├── defs.h
+├── examplesecrets.h
+├── uart.cpp ---------------- This interacts with the IMU. Initialize and read data from IMU
+├── uart.h ------------------
+├── mqttconn.cpp ------------ This interacts with the MQTT broker. Setup connection and publish messages to a topic
+├── mqttconn.h---------------
+├── README
+├── secrets.h --------------- Contains valid credentials
+├── wificonn.cpp ------------ Interacts with WiFi. Setup connection
+└── wificonn.h --------------
+```
+
+## Description
 
 A header file is a file containing C declarations and macro definitions
 to be shared between several project source files. You request the use of a
@@ -31,9 +53,9 @@ header file names, and at most one dot.
 
 Read more about using header files in official GCC documentation:
 
-* Include Syntax
-* Include Operation
-* Once-Only Headers
-* Computed Includes
+- Include Syntax
+- Include Operation
+- Once-Only Headers
+- Computed Includes
 
 https://gcc.gnu.org/onlinedocs/cpp/Header-Files.html
