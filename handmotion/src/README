@@ -1,0 +1,10 @@
+# Src
+
+This directory is intended for PlatformIO Source files.
+
+## What it does
+
+1. Connect to WiFi
+2. Connect to MQTT
+3. Read data from IMU
+4. Send data over MQTT to backend server
