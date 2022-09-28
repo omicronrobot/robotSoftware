@@ -1,0 +1,356 @@
+version: "3.7"
+
+networks:
+  omicron-base-net:
+    driver: bridge
+
+volumes:
+  omicron-auth-db-volume:
+  omicron-users-db-volume:
+  omicron-things-db-volume:
+  omicron-keto-db-volume:
+  omicron-auth-redis-volume:
+  omicron-es-redis-volume:
+  omicron-mqtt-broker-volume:
+
+services:
+  keto:
+    image: oryd/keto:v0.6.0-alpha.3
+    container_name: omicron-keto
+    ports:
+      - ${OR_KETO_READ_REMOTE_PORT}:${OR_KETO_READ_REMOTE_PORT}
+      - ${OR_KETO_WRITE_REMOTE_PORT}:${OR_KETO_WRITE_REMOTE_PORT}
+    environment:
+      - DSN=postgresql://${OR_KETO_DB_USER}:${OR_KETO_DB_PASS}@keto-db:${OR_KETO_DB_PORT}/${OR_KETO_DB}?sslmode=disable
+    command: serve -c /home/ory/keto.yml
+    restart: on-failure
+    volumes:
+      - type: bind
+        source: ./keto
+        target: /home/ory
+    networks:
+      - omicron-base-net
+    depends_on:
+      - keto-db
+
+  keto-migrate:
+    image: oryd/keto:v0.6.0-alpha.3
+    container_name: omicron-keto-migrate
+    environment:
+      - KETO_WRITE_REMOTE=keto:${OR_KETO_WRITE_REMOTE_PORT}
+      - KETO_READ_REMOTE=keto:${OR_KETO_READ_REMOTE_PORT}
+      - DSN=postgresql://${OR_KETO_DB_USER}:${OR_KETO_DB_PASS}@keto-db:${OR_KETO_DB_PORT}/${OR_KETO_DB}?sslmode=disable
+    volumes:
+      - type: bind
+        source: ./keto
+        target: /home/ory
+    command: migrate up --all-namespaces -c /home/ory/keto.yml --yes
+    restart: on-failure
+    networks:
+      - omicron-base-net
+    depends_on:
+      - keto-db
+
+  keto-db:
+    image: postgres:13.3-alpine
+    container_name: omicron-keto-db
+    restart: on-failure
+    environment:
+      POSTGRES_USER: ${OR_KETO_DB_USER}
+      POSTGRES_PASSWORD: ${OR_KETO_DB_PASS}
+      POSTGRES_DB: ${OR_KETO_DB}
+    networks:
+      - omicron-base-net
+    volumes:
+      - omicron-keto-db-volume:/var/lib/postgresql/data
+
+  nginx:
+    image: nginx:1.20.0-alpine
+    container_name: omicron-nginx
+    restart: on-failure
+    volumes:
+      - ./nginx/nginx-${AUTH-key}.conf:/etc/nginx/nginx.conf.template
+      - ./nginx/entrypoint.sh:/docker-entrypoint.d/entrypoint.sh
+      - ./nginx/snippets:/etc/nginx/snippets
+      - ./ssl/authorization.js:/etc/nginx/authorization.js
+      - ./ssl/certs/omicron-server.crt:/etc/ssl/certs/omicron-server.crt
+      - ./ssl/certs/ca.crt:/etc/ssl/certs/ca.crt
+      - ./ssl/certs/omicron-server.key:/etc/ssl/private/omicron-server.key
+      - ./ssl/dhparam.pem:/etc/ssl/certs/dhparam.pem
+    ports:
+      - ${OR_NGINX_HTTP_PORT}:${OR_NGINX_HTTP_PORT}
+      - ${OR_NGINX_SSL_PORT}:${OR_NGINX_SSL_PORT}
+      - ${OR_NGINX_MQTT_PORT}:${OR_NGINX_MQTT_PORT}
+      - ${OR_NGINX_MQTTS_PORT}:${OR_NGINX_MQTTS_PORT}
+    networks:
+      - omicron-base-net
+    env_file:
+      - .env
+    depends_on:
+      - things
+      - users
+      - mqtt-adapter
+      - http-adapter
+      - ws-adapter
+
+  broker:
+    extends:
+      file: brokers/nats.yml
+      service: broker
+    container_name: omicron-broker
+    restart: on-failure
+    networks:
+      - omicron-base-net
+    ports:
+    - 4222:4222
+
+  auth-db:
+    image: postgres:13.3-alpine
+    container_name: omicron-auth-db
+    restart: on-failure
+    environment:
+      POSTGRES_USER: ${OR_AUTH_DB_USER}
+      POSTGRES_PASSWORD: ${OR_AUTH_DB_PASS}
+      POSTGRES_DB: ${OR_AUTH_DB}
+    networks:
+      - omicron-base-net
+    volumes:
+      - omicron-auth-db-volume:/var/lib/postgresql/data
+
+  auth:
+    image: mainflux/auth:${OR_RELEASE_TAG}
+    container_name: omicron-auth
+    depends_on:
+      - auth-db
+      - keto
+    expose:
+      - ${OR_AUTH_GRPC_PORT}
+    restart: on-failure
+    environment:
+      MF_AUTH_LOG_LEVEL: ${OR_AUTH_LOG_LEVEL}
+      MF_AUTH_DB_HOST: auth-db
+      MF_AUTH_DB_PORT: ${OR_AUTH_DB_PORT}
+      MF_AUTH_DB_USER: ${OR_AUTH_DB_USER}
+      MF_AUTH_DB_PASS: ${OR_AUTH_DB_PASS}
+      MF_AUTH_DB: ${OR_AUTH_DB}
+      MF_AUTH_HTTP_PORT: ${OR_AUTH_HTTP_PORT}
+      MF_AUTH_GRPC_PORT: ${OR_AUTH_GRPC_PORT}
+      MF_AUTH_SECRET: ${OR_AUTH_SECRET}
+      MF_AUTH_LOGIN_TOKEN_DURATION: ${OR_AUTH_LOGIN_TOKEN_DURATION}
+      MF_JAEGER_URL: ${OR_JAEGER_URL}
+      MF_KETO_READ_REMOTE_HOST: ${OR_KETO_READ_REMOTE_HOST}
+      MF_KETO_READ_REMOTE_PORT: ${OR_KETO_READ_REMOTE_PORT}
+      MF_KETO_WRITE_REMOTE_HOST: ${OR_KETO_WRITE_REMOTE_HOST}
+      MF_KETO_WRITE_REMOTE_PORT: ${OR_KETO_WRITE_REMOTE_PORT}
+    ports:
+      - ${OR_AUTH_HTTP_PORT}:${OR_AUTH_HTTP_PORT}
+      - ${OR_AUTH_GRPC_PORT}:${OR_AUTH_GRPC_PORT}
+    networks:
+      - omicron-base-net
+
+  users-db:
+    image: postgres:13.3-alpine
+    container_name: omicron-users-db
+    restart: on-failure
+    environment:
+      POSTGRES_USER: ${OR_USERS_DB_USER}
+      POSTGRES_PASSWORD: ${OR_USERS_DB_PASS}
+      POSTGRES_DB: ${OR_USERS_DB}
+    networks:
+      - omicron-base-net
+    volumes:
+      - omicron-users-db-volume:/var/lib/postgresql/data
+
+  users:
+    image: mainflux/users:${OR_RELEASE_TAG}
+    container_name: omicron-users
+    depends_on:
+      - users-db
+      - auth
+    restart: on-failure
+    environment:
+      MF_USERS_LOG_LEVEL: ${OR_USERS_LOG_LEVEL}
+      MF_USERS_DB_HOST: users-db
+      MF_USERS_DB_PORT: ${OR_USERS_DB_PORT}
+      MF_USERS_DB_USER: ${OR_USERS_DB_USER}
+      MF_USERS_DB_PASS: ${OR_USERS_DB_PASS}
+      MF_USERS_DB: ${OR_USERS_DB}
+      MF_USERS_HTTP_PORT: ${OR_USERS_HTTP_PORT}
+      MF_JAEGER_URL: ${OR_JAEGER_URL}
+      MF_TOKEN_RESET_ENDPOINT: ${OR_TOKEN_RESET_ENDPOINT}
+      MF_AUTH_GRPC_URL: ${OR_AUTH_GRPC_URL}
+      MF_AUTH_GRPC_TIMEOUT: ${OR_AUTH_GRPC_TIMEOUT}
+      MF_USERS_ADMIN_EMAIL: ${OR_USERS_ADMIN_EMAIL}
+      MF_USERS_ADMIN_PASSWORD: ${OR_USERS_ADMIN_PASSWORD}
+      MF_USERS_ALLOW_SELF_REGISTER: ${OR_USERS_ALLOW_SELF_REGISTER}
+    ports:
+      - ${OR_USERS_HTTP_PORT}:${OR_USERS_HTTP_PORT}
+    networks:
+      - omicron-base-net
+
+  things-db:
+    image: postgres:13.3-alpine
+    container_name: omicron-things-db
+    restart: on-failure
+    environment:
+      POSTGRES_USER: ${OR_THINGS_DB_USER}
+      POSTGRES_PASSWORD: ${OR_THINGS_DB_PASS}
+      POSTGRES_DB: ${OR_THINGS_DB}
+    networks:
+      - omicron-base-net
+    volumes:
+      - omicron-things-db-volume:/var/lib/postgresql/data
+
+  auth-redis:
+    image: redis:6.2.2-alpine
+    container_name: omicron-auth-redis
+    restart: on-failure
+    networks:
+      - omicron-base-net
+    volumes:
+      - omicron-auth-redis-volume:/data
+
+  things:
+    image: mainflux/things:${OR_RELEASE_TAG}
+    container_name: omicron-things
+    depends_on:
+      - things-db
+      - auth
+    restart: on-failure
+    environment:
+      MF_THINGS_LOG_LEVEL: ${OR_THINGS_LOG_LEVEL}
+      MF_THINGS_DB_HOST: things-db
+      MF_THINGS_DB_PORT: ${OR_THINGS_DB_PORT}
+      MF_THINGS_DB_USER: ${OR_THINGS_DB_USER}
+      MF_THINGS_DB_PASS: ${OR_THINGS_DB_PASS}
+      MF_THINGS_DB: ${OR_THINGS_DB}
+      MF_THINGS_CACHE_URL: auth-redis:${OR_REDIS_TCP_PORT}
+      MF_THINGS_ES_URL: es-redis:${OR_REDIS_TCP_PORT}
+      MF_THINGS_HTTP_PORT: ${OR_THINGS_HTTP_PORT}
+      MF_THINGS_AUTH_HTTP_PORT: ${OR_THINGS_AUTH_HTTP_PORT}
+      MF_THINGS_AUTH_GRPC_PORT: ${OR_THINGS_AUTH_GRPC_PORT}
+      MF_JAEGER_URL: ${OR_JAEGER_URL}
+      MF_AUTH_GRPC_URL: ${OR_AUTH_GRPC_URL}
+      MF_AUTH_GRPC_TIMEOUT: ${OR_AUTH_GRPC_TIMEOUT}
+    ports:
+      - ${OR_THINGS_HTTP_PORT}:${OR_THINGS_HTTP_PORT}
+      - ${OR_THINGS_AUTH_HTTP_PORT}:${OR_THINGS_AUTH_HTTP_PORT}
+      - ${OR_THINGS_AUTH_GRPC_PORT}:${OR_THINGS_AUTH_GRPC_PORT}
+    networks:
+      - omicron-base-net
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.20
+    container_name: omicron-jaeger
+    ports:
+      - ${OR_JAEGER_PORT}:${OR_JAEGER_PORT}/udp
+      - ${OR_JAEGER_FRONTEND}:${OR_JAEGER_FRONTEND}
+      - ${OR_JAEGER_COLLECTOR}:${OR_JAEGER_COLLECTOR}
+      - ${OR_JAEGER_CONFIGS}:${OR_JAEGER_CONFIGS}
+    networks:
+      - omicron-base-net
+
+  vernemq:
+    image: mainflux/vernemq:${OR_RELEASE_TAG}
+    container_name: omicron-vernemq
+    restart: on-failure
+    environment:
+      DOCKER_VERNEMQ_ALLOW_ANONYMOUS: ${OR_DOCKER_VERNEMQ_ALLOW_ANONYMOUS}
+      DOCKER_VERNEMQ_LOG__CONSOLE__LEVEL: ${OR_DOCKER_VERNEMQ_LOG__CONSOLE__LEVEL}
+    networks:
+      - omicron-base-net
+    volumes:
+      - omicron-mqtt-broker-volume:/var/lib/vernemq
+
+  mqtt-adapter:
+    image: mainflux/mqtt:${OR_RELEASE_TAG}
+    container_name: omicron-mqtt
+    depends_on:
+      - vernemq
+      - things
+      - broker
+    restart: on-failure
+    environment:
+      MF_MQTT_ADAPTER_LOG_LEVEL: ${OR_MQTT_ADAPTER_LOG_LEVEL}
+      MF_MQTT_ADAPTER_MQTT_PORT: ${OR_MQTT_ADAPTER_MQTT_PORT}
+      MF_MQTT_ADAPTER_WS_PORT: ${OR_MQTT_ADAPTER_WS_PORT}
+      MF_MQTT_ADAPTER_ES_URL: es-redis:${OR_REDIS_TCP_PORT}
+      MF_BROKER_URL: ${OR_BROKER_URL}
+      MF_MQTT_ADAPTER_MQTT_TARGET_HOST: vernemq
+      MF_MQTT_ADAPTER_MQTT_TARGET_PORT: ${OR_MQTT_BROKER_PORT}
+      MF_MQTT_ADAPTER_MQTT_TARGET_HEALTH_CHECK: http://vernemq:8888/health
+      MF_MQTT_ADAPTER_WS_TARGET_HOST: vernemq
+      MF_MQTT_ADAPTER_WS_TARGET_PORT: ${OR_MQTT_BROKER_WS_PORT}
+      MF_JAEGER_URL: ${OR_JAEGER_URL}
+      MF_THINGS_AUTH_GRPC_URL: ${OR_THINGS_AUTH_GRPC_URL}
+      MF_THINGS_AUTH_GRPC_TIMEOUT: ${OR_THINGS_AUTH_GRPC_TIMEOUT}
+      MF_AUTH_CACHE_URL: auth-redis:${OR_REDIS_TCP_PORT}
+    networks:
+      - omicron-base-net
+
+  http-adapter:
+    image: mainflux/http:${OR_RELEASE_TAG}
+    container_name: omicron-http
+    depends_on:
+      - things
+      - broker
+    restart: on-failure
+    environment:
+      MF_HTTP_ADAPTER_LOG_LEVEL: debug
+      MF_HTTP_ADAPTER_PORT: ${OR_HTTP_ADAPTER_PORT}
+      MF_BROKER_URL: ${OR_BROKER_URL}
+      MF_JAEGER_URL: ${OR_JAEGER_URL}
+      MF_THINGS_AUTH_GRPC_URL: ${OR_THINGS_AUTH_GRPC_URL}
+      MF_THINGS_AUTH_GRPC_TIMEOUT: ${OR_THINGS_AUTH_GRPC_TIMEOUT}
+    ports:
+      - ${OR_HTTP_ADAPTER_PORT}:${OR_HTTP_ADAPTER_PORT}
+    networks:
+      - omicron-base-net
+
+  es-redis:
+    image: redis:6.2.2-alpine
+    container_name: omicron-es-redis
+    restart: on-failure
+    networks:
+      - omicron-base-net
+    volumes:
+      - omicron-es-redis-volume:/data
+
+  coap-adapter:
+    image: mainflux/coap:${OR_RELEASE_TAG}
+    container_name: omicron-coap
+    depends_on:
+      - things
+      - broker
+    restart: on-failure
+    environment:
+      MF_COAP_ADAPTER_LOG_LEVEL: ${OR_COAP_ADAPTER_LOG_LEVEL}
+      MF_COAP_ADAPTER_PORT: ${OR_COAP_ADAPTER_PORT}
+      MF_BROKER_URL: ${OR_BROKER_URL}
+      MF_JAEGER_URL: ${OR_JAEGER_URL}
+      MF_THINGS_AUTH_GRPC_URL: ${OR_THINGS_AUTH_GRPC_URL}
+      MF_THINGS_AUTH_GRPC_TIMEOUT: ${OR_THINGS_AUTH_GRPC_TIMEOUT}
+    ports:
+      - ${OR_COAP_ADAPTER_PORT}:${OR_COAP_ADAPTER_PORT}/udp
+      - ${OR_COAP_ADAPTER_PORT}:${OR_COAP_ADAPTER_PORT}/tcp
+    networks:
+      - omicron-base-net
+
+  ws-adapter:
+    image: mainflux/ws:${OR_RELEASE_TAG}
+    container_name: omicron-ws
+    depends_on:
+      - things
+      - broker
+    restart: on-failure
+    environment:
+      MF_WS_ADAPTER_LOG_LEVEL: ${OR_WS_ADAPTER_LOG_LEVEL}
+      MF_WS_ADAPTER_PORT: ${OR_WS_ADAPTER_PORT}
+      MF_BROKER_URL: ${OR_NATS_URL}
+      MF_JAEGER_URL: ${OR_JAEGER_URL}
+      MF_THINGS_AUTH_GRPC_URL: ${OR_THINGS_AUTH_GRPC_URL}
+      MF_THINGS_AUTH_GRPC_TIMEOUT: ${OR_THINGS_AUTH_GRPC_TIMEOUT}
+    ports:
+      - ${OR_WS_ADAPTER_PORT}:${OR_WS_ADAPTER_PORT}
+    networks:
+      - omicron-base-net
