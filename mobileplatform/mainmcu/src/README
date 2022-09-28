@@ -1,0 +1,9 @@
+# Src
+
+This directory is intended for PlatformIO Source files.
+
+## What it does
+
+1. Connect and Read data from UART
+2. Drive DC motors based on roll, yaw and pitch
+3. Drive Stepper motors based on roll, yaw and pitch
