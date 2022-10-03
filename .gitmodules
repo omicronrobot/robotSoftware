@@ -1,0 +1,3 @@
+[submodule "mobileplatform/mainmcu/lib/AsynchSerial"]
+	path = mobileplatform/mainmcu/lib/AsynchSerial
+	url = https://github.com/pilotak/AsynchSerial.git
