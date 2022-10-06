@@ -3,7 +3,7 @@ FFLAGS = --chip esp32 --port /dev/ttyUSB0
 BFLAG = --baud 460800
 
 clean:
-	rm -f .pio/build/esp12e/firmware.*
+	pio run --target clean
 
 build:
 	pio run
