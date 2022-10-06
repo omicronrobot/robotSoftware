@@ -2,7 +2,7 @@ BIN = arm-none-eabi-objcopy
 STL = st-flash
 
 clean:
-	rm -f .pio/build/genericSTM32F103C8/firmware.elf *.bin
+	pio run --target clean
 
 flash: clean
 	pio run
