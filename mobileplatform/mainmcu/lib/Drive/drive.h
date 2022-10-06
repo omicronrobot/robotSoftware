@@ -1,5 +1,5 @@
-#ifndef UART_H
-#define UART_H
+#ifndef MOBILEPLATFORM_MAINMCU_LIB_DRIVE_DRIVE_H_
+#define MOBILEPLATFORM_MAINMCU_LIB_DRIVE_DRIVE_H_
 
 #include "mbed.h"
 #include "defs.h"
@@ -52,4 +52,4 @@ public:
     void drive(Data data);
 };
 
-#endif
+#endif // MOBILEPLATFORM_MAINMCU_LIB_DRIVE_DRIVE_H_

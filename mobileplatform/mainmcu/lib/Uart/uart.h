@@ -1,5 +1,5 @@
-#ifndef UART_H
-#define UART_H
+#ifndef MOBILEPLATFORM_MAINMCU_LIB_UART_UART_H_
+#define MOBILEPLATFORM_MAINMCU_LIB_UART_UART_H_
 
 #include "defs.h"
 #include "mbed.h"
@@ -29,4 +29,4 @@ public:
     ~Uart();
 };
 
-#endif
+#endif // MOBILEPLATFORM_MAINMCU_LIB_UART_UART_H_

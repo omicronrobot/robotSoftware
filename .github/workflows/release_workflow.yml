@@ -1,0 +1,67 @@
+name: Release
+
+on:
+  push:
+    # Sequence of patterns matched against refs/tags
+    tags:
+      - "v*" # Push events to matching v*, i.e. v1.0, v20.15.10
+
+jobs:
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v1
+
+      - name: Install pio and its dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install platformio
+
+      - name: Build handmotion
+        run: cd handmotion && platformio run
+
+      - name: Build wificlient
+        run: cd mobileplatform/wificlient && platformio run
+
+      - name: Build mainmcu
+        run: cd mobileplatform/mainmcu && platformio run
+
+      - name: Upload binaries to release
+        uses: svenstaro/upload-release-action@v1-release
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: .pio/build/*/firmware_*.bin
+          tag: ${{ github.ref }}
+          overwrite: true
+          file_glob: true
+
+      - name: Conventional Changelog Action
+        id: changelog
+        uses: TriPSs/conventional-changelog-action@v3
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }
+          output-file: "false"
+      - name: Create Release # This action will create the actual release
+        uses: actions/create-release@v1
+        if: ${{ steps.changelog.outputs.skipped == 'false' }
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }
+        with:
+          tag_name: ${{ steps.changelog.outputs.tag }
+          release_name: ${{ steps.changelog.outputs.tag }
+          body: ${{ steps.changelog.outputs.clean_changelog }
+
+      - uses: ncipollo/release-action@v1
+        with:
+          artifacts: "mobileplatform/wificlient/.pio/build/*/firmware_*.bin,mobileplatform/mainmcu/.pio/build/*/firmware_*.bin,handmotion/.pio/build/*/firmware_*.bin"
+          bodyFile: |
+            ${{ steps.Changelog.outputs.changelog }}
+          token: ${{ secrets.YOUR_GITHUB_TOKEN }}
+          tag: ${{ github.ref }}
+          name: Release ${{ github.ref }}

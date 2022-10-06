@@ -1,0 +1,22 @@
+name: cpplint
+
+on: [push, pull_request]
+
+jobs:
+  cpplint:
+    name: Linting
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install cpplint
+      - name: Linting
+        run: |
+          cpplint --exclude=mobileplatform/mainmcu/lib/AsynchSerial --recursive --filter=-runtime/references,-readability/braces,-whitespace,-legal,-build/include handmotion/include handmotion/lib handmotion/src mobileplatform/mainmcu/include mobileplatform/mainmcu/lib mobileplatform/mainmcu/src mobileplatform/wificlient/include mobileplatform/wificlient/lib mobileplatform/wificlient/src

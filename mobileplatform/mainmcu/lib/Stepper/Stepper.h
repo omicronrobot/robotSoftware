@@ -24,8 +24,8 @@
  *    4  1  0  0  1
  */
 
-#ifndef Stepper_h
-#define Stepper_h
+#ifndef MOBILEPLATFORM_MAINMCU_LIB_STEPPER_STEPPER_H_
+#define MOBILEPLATFORM_MAINMCU_LIB_STEPPER_STEPPER_H_
 
 #include "mbed.h"
 
@@ -38,17 +38,17 @@ private:
     DigitalOut _motor_pin_3;
     DigitalOut _motor_pin_4;
     int _direction;                // Direction of rotation
-    unsigned long _step_delay;     // delay between steps, in us, based on speed
+    unsigned u_int64_t _step_delay;     // delay between steps, in us, based on speed
     int _number_of_steps;          // total number of steps this motor can take
     int _step_number;              // which step the motor is on
-    unsigned long _last_step_time; // timestamp in us of when the last step was taken
+    unsigned u_int64_t _last_step_time; // timestamp in us of when the last step was taken
     void stepMotor(int this_step);
 
 public:
     Stepper(int number_of_steps, PinName motor_pin_1, PinName motor_pin_2, PinName motor_pin_3, PinName motor_pin_4);
 
-    void setSpeed(long whatSpeed);
+    void setSpeed(u_int16_t whatSpeed);
     void step(int number_of_steps);
 };
 
-#endif
+#endif // MOBILEPLATFORM_MAINMCU_LIB_STEPPER_STEPPER_H_

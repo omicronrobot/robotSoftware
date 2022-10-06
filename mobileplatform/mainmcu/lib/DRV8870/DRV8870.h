@@ -11,8 +11,8 @@
  *      1      1       Brake/slow decay
  */
 
-#ifndef DRV8870_H
-#define DRV8870_H
+#ifndef MOBILEPLATFORM_MAINMCU_LIB_DRV8870_DRV8870_H_
+#define MOBILEPLATFORM_MAINMCU_LIB_DRV8870_DRV8870_H_
 
 #include "mbed.h"
 #include <SoftPWM.h>
@@ -58,4 +58,4 @@ public:
     void brake(int mode = COAST);
 };
 
-#endif
+#endif // MOBILEPLATFORM_MAINMCU_LIB_DRV8870_DRV8870_H_

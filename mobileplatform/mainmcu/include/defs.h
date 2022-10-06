@@ -1,5 +1,5 @@
-#ifndef DEFINITIONS_H
-#define DEFINITIONS_H
+#ifndef MOBILEPLATFORM_MAINMCU_INCLUDE_DEFS_H_
+#define MOBILEPLATFORM_MAINMCU_INCLUDE_DEFS_H_
 
 #include "mbed.h"
 #include "math.h"
@@ -33,13 +33,13 @@ float convert_to_float(int var)
     }
     else if (var < 10)
     {
-        float num = ((float)(var)) * -0.1;
-        return ((float)((int)(num * 10))) / 10;
+        float num = (static_cast<float>(var)) * -0.1;
+        return (static_cast<float>static_cast<int>(num * 10))) / 10;
     }
     else if (var > 10)
     {
-        float num = ((float)(var - 10)) * 0.1;
-        return ((float)((int)(num * 10))) / 10;
+        float num = (static_cast<float>(var - 10)) * 0.1;
+        return (static_cast<float>(static_cast<int>(num * 10))) / 10;
     }
 }
 
@@ -54,4 +54,4 @@ int map(int x, int in_min, int in_max, int out_min, int out_max)
 #else
 #define debug(x)
 #endif
-#endif
+#endif // MOBILEPLATFORM_MAINMCU_INCLUDE_DEFS_H_

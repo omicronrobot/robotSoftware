@@ -9,7 +9,7 @@ Stepper::Stepper(int number_of_steps, PinName motor_pin_1, PinName motor_pin_2, 
   this->_number_of_steps = number_of_steps; // total number of steps for this motor
 }
 
-void Stepper::setSpeed(long whatSpeed)
+void Stepper::setSpeed(u_int16_t whatSpeed)
 {
   this->_step_delay = 60L * 1000L * 1000L / this->_number_of_steps / whatSpeed;
 }
@@ -31,7 +31,7 @@ void Stepper::step(int steps_to_move)
   // decrement the number of steps, moving one step each time:
   while (steps_left > 0)
   {
-    unsigned long now = us_ticker_read();
+    unsigned u_int64_t now = us_ticker_read();
     // move only if the appropriate delay has passed:
     if (now - this->_last_step_time >= this->_step_delay)
     {
