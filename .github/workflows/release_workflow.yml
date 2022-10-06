@@ -34,36 +34,30 @@ jobs:
       - name: Build mainmcu
         run: cd mobileplatform/mainmcu && platformio run
 
-      - name: Upload binaries to release
+      - name: Upload wificlient binaries to release
         uses: svenstaro/upload-release-action@v1-release
         with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: .pio/build/*/firmware_*.bin
+          repo_token: ${{ secrets.CI_TOKEN }}
+          file: mobileplatform/wificlient/.pio/build/*/firmware_*.bin
           tag: ${{ github.ref }}
           overwrite: true
           file_glob: true
 
-      - name: Conventional Changelog Action
-        id: changelog
-        uses: TriPSs/conventional-changelog-action@v3
+      - name: Upload mainmcu binaries to release
+        uses: svenstaro/upload-release-action@v1-release
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          output-file: "false"
-      - name: Create Release # This action will create the actual release
-        uses: actions/create-release@v1
-        if: ${{ steps.changelog.outputs.skipped == 'false' }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ steps.changelog.outputs.tag }}
-          release_name: ${{ steps.changelog.outputs.tag }}
-          body: ${{ steps.changelog.outputs.clean_changelog }}
-
-      - uses: ncipollo/release-action@v1
-        with:
-          artifacts: "mobileplatform/wificlient/.pio/build/*/firmware_*.bin,mobileplatform/mainmcu/.pio/build/*/firmware_*.bin,handmotion/.pio/build/*/firmware_*.bin"
-          bodyFile: |
-            ${{ steps.Changelog.outputs.changelog }}
-          token: ${{ secrets.YOUR_GITHUB_TOKEN }}
+          repo_token: ${{ secrets.CI_TOKEN }}
+          file: mobileplatform/mainmcu/.pio/build/*/firmware_*.bin
           tag: ${{ github.ref }}
-          name: Release ${{ github.ref }}
+          overwrite: true
+          file_glob: true   
+
+      - name: Upload handmotion binaries to release
+        uses: svenstaro/upload-release-action@v1-release
+        with:
+          repo_token: ${{ secrets.CI_TOKEN }}
+          file: handmotion/.pio/build/*/firmware_*.bin
+          tag: ${{ github.ref }}
+          overwrite: true
+          file_glob: true   
+
