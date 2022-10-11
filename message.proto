@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package omicron;
 
-service ThingsService {
+service OmicronService {
 	rpc SendMessage(OmicronMessage) returns (OmicronResponse) {}
 }
   
