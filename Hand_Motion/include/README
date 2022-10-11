@@ -1,0 +1,14 @@
+
+This directory is intended for project header files.
+
+contains C declarations and macro definitions
+
+```src/main.c
+
+#include "header.h"
+
+int main (void)
+{
+ ...
+}
+```
