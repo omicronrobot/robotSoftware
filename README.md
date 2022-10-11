@@ -11,21 +11,25 @@ The messaging scheme is guided by this protocol buffer:
 
 ```proto
 service ThingsService {
-  rpc SendMessage(OmicronMessage) returns (OmicronResponse) {}
+	rpc SendMessage(OmicronMessage) returns (OmicronResponse) {}
 }
-
+  
 message OmicronMessage {
-    string pitch     = 1; // The pitch for moving back and forth. Forward and backward direction
-    string roll      = 2; // Roll used to move the robot sideways. Left and Right direction
-    string yaw       = 3; // Yaw used to control the direction of the robot. Rotation about perpendicular axis to the floor
-    string timestamp = 4; // Timestamp used to denote when the message was sent
-    string publisher = 5; // The publisher of the message. It can be handmotion or mobile
-    string protocol  = 6; // The protocol used to send the message. It can be websocket, http or mqtt
+	float pitch     = 1; // The pitch for speed control of the robot. Speed is either max forward or zero or max revers. float -1 to +1.
+	int   yaw       = 2; // Yaw used to control the direction of the robot. Rotation about perpendicular axis to the floor. Int 0 to 360.
+	string metadata = 4; // The metadata of the message. It can be used to add any payload to the message for example the publisher.
 }
 
-// TODO add respose to robot. To indicate if it is in motion on stationary
+// Message 0.6:270:handmotion 30Bytes
+
 message OmicronResponse {}
 ```
+
+## Setup
+
+1. Install [PlatformIO using their documentation](https://docs.platformio.org/en/latest/core/index.html)
+2. Use Python3.7 - [Follow docs to install](https://linuxize.com/post/how-to-install-python-3-7-on-ubuntu-18-04/)
+2. Install Make - Follow [official documentation](https://www.gnu.org/software/make/)
 
 ## TODO
 

@@ -7,12 +7,12 @@ service ThingsService {
 }
   
 message OmicronMessage {
-	string pitch     = 1; // The pitch for moving back and forth. Forward and backward direction. Int 0 to 2000 i.e 0200. Witch corresponds to -1.00 to +1.00
-	string roll      = 2; // Roll used to move the robot sideways. Left and Right direction. Int 0 to 2000 i.e 1200. Witch corresponds to -1.00 to +1.00
-	string yaw       = 3; // Yaw used to control the direction of the robot. Rotation about perpendicular axis to the floor. Int 0 to 2000 i.e 1000. Witch corresponds to -1.00 to +1.00
-	string publisher = 4; // The publisher of the message. It can be handmotion or mobile. String either h or m
-	string protocol  = 5; // The protocol used to send the message. It can be websocket, http or mqtt. String either w, h or m
+	float pitch     = 1; // The pitch for speed control of the robot. Speed is either max forward or zero or max revers. float -1 to +1.
+	int   yaw       = 2; // Yaw used to control the direction of the robot. Rotation about perpendicular axis to the floor. Int 0 to 360.
+	string metadata = 4; // The metadata of the message. It can be used to add any payload to the message for example the publisher.
 }
-// Message 0200.1200.1000.h.m
+
+// Message 0.6:270:handmotion 30Bytes
+
 // TODO add respose to robot. To indicate if it is in motion on stationary
 message OmicronResponse {}
