@@ -6,7 +6,7 @@ networks:
 
 services:
   postgres-reader:
-    image: mainflux/postgres-reader:${OR_RELEASE_TAG}
+    image: ghcr.io/0x6f736f646f/omicron_postgres-reader:${OR_RELEASE_TAG}
     container_name: omicron-postgres-reader
     restart: on-failure
     environment:

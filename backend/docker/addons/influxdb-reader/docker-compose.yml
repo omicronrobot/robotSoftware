@@ -6,7 +6,7 @@ networks:
 
 services:
   influxdb-reader:
-    image: mainflux/influxdb-reader:${OR_RELEASE_TAG}
+    image: ghcr.io/0x6f736f646f/omicron_influxdb-reader:${OR_RELEASE_TAG}
     container_name: omicron-influxdb-reader
     restart: on-failure
     environment:
