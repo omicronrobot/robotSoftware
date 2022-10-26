@@ -9,7 +9,7 @@ Uart::Uart(PinName tx, PinName rx, uint16_t baudrate) : _baudrate(baudrate), _es
         1);
 }
 
-// TODO add support for message pack or json
+// TODO(0x6f736f646f): add support for message pack or json
 Data Uart::ReceiveData()
 {
     int16_t len = _esp_serial_port.read(this->_message_buffer, sizeof(this->_message_buffer));
