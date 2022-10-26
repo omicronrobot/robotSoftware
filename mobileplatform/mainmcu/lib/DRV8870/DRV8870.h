@@ -39,7 +39,7 @@ public:
      *
      * @param speed The speed of the motor as a normalised value between -1.0 and 1.0
      */
-    void speed(float speed);
+    void setSpeed(float speed);
 
     /** Set the period of the pwm duty cycle.
      *
@@ -47,7 +47,7 @@ public:
      *
      * @param seconds - Pwm duty cycle in seconds.
      */
-    void period(float period);
+    void setPeriod(float period);
 
     /** Brake the H-bridge coast or brake.
      *
