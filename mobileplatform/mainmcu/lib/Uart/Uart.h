@@ -16,7 +16,6 @@ private:
 
 public:
     Uart(PinName rx, PinName tx, uint16_t baudrate);
-    void init();        // Initializes the serial communication
     Data ReceiveData(); // Receive data from serial communication after formating data
 };
 

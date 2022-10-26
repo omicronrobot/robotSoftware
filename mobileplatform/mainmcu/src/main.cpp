@@ -16,11 +16,10 @@ Uart uart(PA_0, PA_1, 9600);
 int main()
 {
     drive.init(50, 0.01);
-    // uart.init();
     while (1)
     {
         Data data = uart.ReceiveData();
         drive.drive(data.pitch, data.yaw);
-        ThisThread::sleep_for(500);
+        ThisThread::sleep_for(1000);
     }
 }
