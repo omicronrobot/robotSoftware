@@ -7,9 +7,25 @@ ifdef pv
 	docker volume ls -f name=$(OR_DOCKER_IMAGE_NAME_PREFIX) -f dangling=true -q | xargs -r docker volume rm
 endif
 
-run:
+stop:
+	docker-compose -f docker-compose.yml down
+	docker-compose -f addons/influxdb-reader/docker-compose.yml down
+	docker-compose -f addons/influxdb-writer/docker-compose.yml down
+	docker-compose -f addons/postgres-reader/docker-compose.yml down
+	docker-compose -f addons/postgres-writer/docker-compose.yml down
+
+startaddons:
 	docker-compose -f addons/influxdb-reader/docker-compose.yml up -d
 	docker-compose -f addons/influxdb-writer/docker-compose.yml up -d
 	docker-compose -f addons/postgres-reader/docker-compose.yml up -d
 	docker-compose -f addons/postgres-writer/docker-compose.yml up -d
+
+run:
 	docker-compose -f docker-compose.yml up
+
+all:
+	docker-compose -f docker-compose.yml up -d
+	docker-compose -f addons/influxdb-reader/docker-compose.yml up -d
+	docker-compose -f addons/influxdb-writer/docker-compose.yml up -d
+	docker-compose -f addons/postgres-reader/docker-compose.yml up -d
+	docker-compose -f addons/postgres-writer/docker-compose.yml up -d

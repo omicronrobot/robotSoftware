@@ -71,18 +71,24 @@ func main() {
 
 	SendMessage(channel.ID, thing.ID, thing.Key, mfsdk)
 
+	fmt.Printf("User Details\n\tUser Email: %s\n\tUser password: %s\n\tUser Token:%s\n", adminUser.Email, adminUser.Password, admintoken)
+	fmt.Printf("Messaging Topic\n\tPublish/Subscribe Topic: channels/%s/messages\n", channelID)
 	pp.Println(thing)
 	pp.Println(channel)
 }
 
 func SendMessage(chanID, thingID, thingKey string, sdk sdk.SDK) {
+	// 	[
+	//   {"bn":"mobile","n":"pitch","u":"m/s","v":distance},
+	//   {"n":"yaw","u":"rad","v":degree}
+	// ]
 	for p := 0; p < nMessage; p++ {
-		msg1 := fmt.Sprintf("[{\"bn\":\"%s\",\"n\":\"http\",\"v\":%d}]", name, p)
+		msg1 := fmt.Sprintf("[{\"bn\":\"http-app\",\"n\":\"pitch\",\"u\":\"m/s\",\"v\":%d}, {\"n\":\"yaw\",\"u\":\"rad\",\"v\":%d}]", p, p)
 		cmd1 := exec.Command("curl", "-s", "-S", "-i", "-X", "POST", "-H", "Content-Type: application/senml+json", "-H", fmt.Sprintf("Authorization: Thing %s", thingKey), fmt.Sprintf("http://localhost/http/channels/%s/messages", chanID), "-d", msg1)
 		if _, err := cmd1.Output(); err != nil {
 			log.Fatal(err)
 		}
-		msg2 := fmt.Sprintf("[{\"bn\":\"%s\",\"n\":\"mqtt\",\"v\":%d}]", name, p)
+		msg2 := fmt.Sprintf("[{\"bn\":\"mqtt-app\",\"n\":\"pitch\",\"u\":\"m/s\",\"v\":%d}, {\"n\":\"yaw\",\"u\":\"rad\",\"v\":%d}]", p, p)
 		cmd2 := exec.Command("mosquitto_pub", "-u", thingID, "-P", thingKey, "-t", fmt.Sprintf("channels/%s/messages", chanID), "-h", "localhost", "-m", msg2)
 		if _, err := cmd2.Output(); err != nil {
 			log.Fatal(err)

@@ -94,15 +94,16 @@ services:
       - ws-adapter
 
   broker:
-    extends:
-      file: brokers/nats.yml
-      service: broker
+    image: nats:2.2.4-alpine
+    command: "-c /etc/nats/nats.conf"
+    volumes:
+      - ./nats/:/etc/nats
+    ports:
+      - ${OR_NATS_PORT}:${OR_NATS_PORT}
     container_name: omicron-broker
     restart: on-failure
     networks:
       - omicron-base-net
-    ports:
-    - 4222:4222
 
   auth-db:
     image: postgres:13.3-alpine
@@ -118,7 +119,7 @@ services:
       - omicron-auth-db-volume:/var/lib/postgresql/data
 
   auth:
-    image: mainflux/auth:${OR_RELEASE_TAG}
+    image: ghcr.io/0x6f736f646f/omicron_auth:${OR_RELEASE_TAG}
     container_name: omicron-auth
     depends_on:
       - auth-db
@@ -162,7 +163,7 @@ services:
       - omicron-users-db-volume:/var/lib/postgresql/data
 
   users:
-    image: mainflux/users:${OR_RELEASE_TAG}
+    image: ghcr.io/0x6f736f646f/omicron_users:${OR_RELEASE_TAG}
     container_name: omicron-users
     depends_on:
       - users-db
@@ -211,7 +212,7 @@ services:
       - omicron-auth-redis-volume:/data
 
   things:
-    image: mainflux/things:${OR_RELEASE_TAG}
+    image: ghcr.io/0x6f736f646f/omicron_things:${OR_RELEASE_TAG}
     container_name: omicron-things
     depends_on:
       - things-db
@@ -251,7 +252,7 @@ services:
       - omicron-base-net
 
   vernemq:
-    image: mainflux/vernemq:${OR_RELEASE_TAG}
+    image: ghcr.io/0x6f736f646f/omicron_vernemq:${OR_RELEASE_TAG}
     container_name: omicron-vernemq
     restart: on-failure
     environment:
@@ -263,7 +264,7 @@ services:
       - omicron-mqtt-broker-volume:/var/lib/vernemq
 
   mqtt-adapter:
-    image: mainflux/mqtt:${OR_RELEASE_TAG}
+    image: ghcr.io/0x6f736f646f/omicron_mqtt:${OR_RELEASE_TAG}
     container_name: omicron-mqtt
     depends_on:
       - vernemq
@@ -289,7 +290,7 @@ services:
       - omicron-base-net
 
   http-adapter:
-    image: mainflux/http:${OR_RELEASE_TAG}
+    image: ghcr.io/0x6f736f646f/omicron_http:${OR_RELEASE_TAG}
     container_name: omicron-http
     depends_on:
       - things
@@ -317,7 +318,7 @@ services:
       - omicron-es-redis-volume:/data
 
   coap-adapter:
-    image: mainflux/coap:${OR_RELEASE_TAG}
+    image: ghcr.io/0x6f736f646f/omicron_coap:${OR_RELEASE_TAG}
     container_name: omicron-coap
     depends_on:
       - things
@@ -337,7 +338,7 @@ services:
       - omicron-base-net
 
   ws-adapter:
-    image: mainflux/ws:${OR_RELEASE_TAG}
+    image: ghcr.io/0x6f736f646f/omicron_ws:${OR_RELEASE_TAG}
     container_name: omicron-ws
     depends_on:
       - things

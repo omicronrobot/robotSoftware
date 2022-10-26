@@ -22,7 +22,7 @@ services:
       - omicron-postgres-writer-volume:/var/lib/postgresql/data
 
   postgres-writer:
-    image: mainflux/postgres-writer:${OR_RELEASE_TAG}
+    image: ghcr.io/0x6f736f646f/omicron_postgres-writer:${OR_RELEASE_TAG}
     container_name: omicron-postgres-writer
     depends_on:
       - postgres

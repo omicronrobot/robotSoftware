@@ -1,12 +1,12 @@
 # Docker Composition
 
-This backend it built with Mainflux. Mainflux is modern, scalable, secure open source and patent-free IoT cloud platform written in Go. It accepts user and thing connections over various network protocols (i.e. HTTP, MQTT, WebSocket, CoAP), thus making a seamless bridge between them. It is used as the IoT middleware for building complex IoT solutions.
+This backend is built with Mainflux. Mainflux is a modern, scalable, secure open source, and patent-free IoT cloud platform written in Go. It accepts user and thing connections over various network protocols (i.e. HTTP, MQTT, WebSocket, CoAP), thus making a seamless bridge between them. It is used as the IoT middleware for building complex IoT solutions.
 
-This will be a great addition to our project as mainflux accepts HTTP, MQTT and WebSocket connections which are used by our client applications. The Flutter Mobile Application will be able to connect to our backend using either HTTP, MQTT or WebSocket, the handmotion controller will be able to connect to our backend using HTTP and MQTT while the mobile platform will receive the data published by the flutter application client and hand motion application client by MQTT. This will ensure seamless intergration.
+This will be a great addition to our project as mainflux accepts HTTP, MQTT, and WebSocket connections which are used by our client applications. The Flutter Mobile Application will be able to connect to our backend using either HTTP, MQTT, or WebSocket, the hand motion controller will be able to connect to our backend using HTTP and MQTT while the mobile platform will receive the data published by the flutter application client and hand motion application client by MQTT. This will ensure seamless integration.
 
 Configure environment variables and run Mainflux Docker Composition.
 
-\*Note\*\*: `docker-compose` uses `.env` file to set all environment variables. Ensure that you run the command from the same location as .env file.
+\*Note\*\*: `docker-compose` uses a `.env` file to set all environment variables. Ensure that you run the command from the same location as the .env file.
 
 ## Installation
 
@@ -15,7 +15,7 @@ Configure environment variables and run Mainflux Docker Composition.
 
 ## Usage
 
-Run following commands from this directory.
+Run the following commands from this directory.
 
 ```bash
 make run
@@ -25,9 +25,9 @@ To pull docker images from a specific release you need to change the value of `O
 
 ## Setup Mainflux
 
-Install [omicron-linux](../Setup/build/omicron-linux) or [omicron-windows](../Setup/build/omicron-windows.exe) on your system. Omicron binary makes it easy to manage users, things, channels.
+Install [omicron-linux](../Setup/build/omicron-linux) or [omicron-windows](../Setup/build/omicron-windows.exe) on your system. Omicron binary makes it easy to manage users, things, and channels.
 
-CLI can be downloaded as separate asset from [Setup folder](../Setup/) or it can be built with GNU Make tool:
+CLI can be downloaded as a separate asset from the [Setup folder](../Setup/) or it can be built with the GNU Make tool:
 
 Run the following commands
 
@@ -35,11 +35,11 @@ Run the following commands
 omciron-linux
 ```
 
-## You can do it on you own by
+## You can do it on your own by
 
-Install mainflux-cli on your system. Mainflux CLI makes it easy to manage users, things, channels and messages.
+Install mainflux-cli on your system. Mainflux CLI makes it easy to manage users, things, channels, and messages.
 
-CLI can be downloaded as separate asset from [project realeses](https://github.com/mainflux/mainflux/releases) or it can be built with GNU Make tool:
+CLI can be downloaded as a separate asset from [project releases](https://github.com/mainflux/mainflux/releases) or it can be built with the GNU Make tool:
 
 ### Login Admin User
 

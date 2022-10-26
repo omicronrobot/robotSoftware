@@ -12,12 +12,6 @@ define macos_compile
 	GOOS=darwin GOARCH=amd64 go build -mod=vendor -ldflags="-s -w" -o ${BUILD_DIR}/omicron-darwin main.go
 endef
 
-define compile_service
-	$(call windows_compile)
-	$(call linux_compile)
-	$(call macos_compile)
-endef
-
 clean:
 	rm -rf ${BUILD_DIR}
 
