@@ -8,6 +8,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+        with:
+          submodules: recursive
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -24,10 +26,13 @@ jobs:
           python -m pip install --upgrade pip
           pip install -U platformio
           platformio update
+
       - name: Build handmotion
         run: cd handmotion && platformio run
+
       - name: Build wificlient
         run: cd mobileplatform/wificlient && platformio run
+
       - name: Build mainmcu
         run: cd mobileplatform/mainmcu && platformio run
 
@@ -36,15 +41,19 @@ jobs:
     runs-on: windows-2019
     steps:
       - uses: actions/checkout@v2
+        with:
+          submodules: recursive
 
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: "3.8"    
+
       - name: Activate msys2 & mingw64
         run: |
           echo "C:\msys64\usr\bin" >> $env:GITHUB_PATH
           echo "C:\msys64\mingw64\bin" >> $env:GITHUB_PATH
+
       - name: Install deps
         run: |
           pacman --noconfirm -S --needed mingw-w64-x86_64-SDL2
@@ -55,9 +64,12 @@ jobs:
           python -m pip install --upgrade pip
           pip install -U platformio
           platformio update
+
       - name: Build handmotion
         run: cd handmotion && platformio run
+
       - name: Build wificlient
         run: cd mobileplatform/wificlient && platformio run
+        
       - name: Build mainmcu
         run: cd mobileplatform/mainmcu && platformio run
