@@ -16,7 +16,7 @@ Data Uart::ReceiveData()
 
     if ((len > 0) && (len == 4))
     {
-        this->_message.pitch = this->_message_buffer[0:2];
+        this->_message.pitch = this->_message_buffer[0] * 100 + this->_message_buffer[1] * 10 + this->_message_buffer[2];
         this->_message.yaw = this->_message_buffer[3];
     }
     return this->_message;
