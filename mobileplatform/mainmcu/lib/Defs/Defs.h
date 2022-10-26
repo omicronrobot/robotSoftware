@@ -1,8 +1,7 @@
-#ifndef MOBILEPLATFORM_MAINMCU_INCLUDE_DEFS_H_
-#define MOBILEPLATFORM_MAINMCU_INCLUDE_DEFS_H_
+#ifndef MOBILEPLATFORM_MAINMCU_LIB_DEFS_H_
+#define MOBILEPLATFORM_MAINMCU_LIB_DEFS_H_
 
 #include "mbed.h"
-#include "math.h"
 
 #define MAXIMUM_BUFFER_SIZE 18
 
@@ -26,4 +25,4 @@ struct Data
 #else
 #define debug(x)
 #endif
-#endif // MOBILEPLATFORM_MAINMCU_INCLUDE_DEFS_H_
+#endif // MOBILEPLATFORM_MAINMCU_LIB_DEFS_H_
