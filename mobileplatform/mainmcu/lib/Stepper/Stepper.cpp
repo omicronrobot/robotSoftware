@@ -1,4 +1,3 @@
-#include "mbed.h"
 #include "Stepper.h"
 
 Stepper::Stepper(uint16_t number_of_steps, uint16_t step_number, uint8_t direction, PinName motor_pin_1, PinName motor_pin_2, PinName motor_pin_3, PinName motor_pin_4) : _motor_pin_1(motor_pin_1), _motor_pin_2(motor_pin_2), _motor_pin_3(motor_pin_3), _motor_pin_4(motor_pin_4)
