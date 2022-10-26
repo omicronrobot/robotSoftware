@@ -37,18 +37,17 @@ private:
     DigitalOut _motor_pin_2;
     DigitalOut _motor_pin_3;
     DigitalOut _motor_pin_4;
-    int _direction;                // Direction of rotation
-    unsigned u_int64_t _step_delay;     // delay between steps, in us, based on speed
-    int _number_of_steps;          // total number of steps this motor can take
-    int _step_number;              // which step the motor is on
-    unsigned u_int64_t _last_step_time; // timestamp in us of when the last step was taken
-    void stepMotor(int this_step);
+    uint8_t _direction;        // Direction of rotation
+    uint32_t _step_delay;      // delay between steps, in us, based on speed
+    uint16_t _number_of_steps; // total number of steps this motor can take
+    uint16_t _step_number;     // which step the motor is on
+    uint32_t _last_step_time;  // timestamp in us of when the last step was taken
+    void stepMotor(uint16_t this_step);
 
 public:
-    Stepper(int number_of_steps, PinName motor_pin_1, PinName motor_pin_2, PinName motor_pin_3, PinName motor_pin_4);
-
-    void setSpeed(u_int16_t whatSpeed);
-    void step(int number_of_steps);
+    Stepper(uint16_t number_of_steps, uint16_t step_number, uint8_t direction, PinName motor_pin_1, PinName motor_pin_2, PinName motor_pin_3, PinName motor_pin_4);
+    void setSpeed(uint16_t speed);
+    void step(int16_t number_of_steps);
 };
 
 #endif // MOBILEPLATFORM_MAINMCU_LIB_STEPPER_STEPPER_H_
