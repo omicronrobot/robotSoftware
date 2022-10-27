@@ -8,11 +8,11 @@ ifdef pv
 endif
 
 stop:
-	docker-compose -f docker-compose.yml down
 	docker-compose -f addons/influxdb-reader/docker-compose.yml down
 	docker-compose -f addons/influxdb-writer/docker-compose.yml down
 	docker-compose -f addons/postgres-reader/docker-compose.yml down
 	docker-compose -f addons/postgres-writer/docker-compose.yml down
+	docker-compose -f docker-compose.yml down
 
 startaddons:
 	docker-compose -f addons/influxdb-reader/docker-compose.yml up -d
