@@ -41,10 +41,7 @@ struct DrivePins
 class Drive
 {
 private:
-    DigitalOut _top_left_en;
-    DigitalOut _top_right_en;
-    DigitalOut _bottom_left_en;
-    DigitalOut _bottom_right_en;
+
     Motor _top_left;
     Motor _top_right;
     Motor _bottom_left;
