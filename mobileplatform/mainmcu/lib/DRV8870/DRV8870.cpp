@@ -3,9 +3,9 @@
 Motor::Motor(PinName pwm1, PinName pwm2) : _pwm1(pwm1), _pwm2(pwm2)
 {
     // Set initial condition of PWM
-    this->_pwm1.period(0.001);
+    this->_pwm1.period(0.1f);
     this->_pwm1.write(0.0f);
-    this->_pwm2.period(0.001);
+    this->_pwm2.period(0.1f);
     this->_pwm2.write(0.0f);
 }
 
