@@ -2,9 +2,8 @@
 
 This is the omciron mobile platform main mcu. The mainmcu is used to drive the DC motors for translation motion based on poll and pitch. It also drives the stepper motors based on yaw for direction. The main MCU receives data from the WifiClient using UART protocol.
 
-1. Pitch - Used to move in the forward and backward direction.
-2. Roll - Used to move in the left or right direction.
-3. Yaw - Used to turn the robot perpendicular to the surface.
+1. Pitch - Used for speed controll for the robot. +1 being maximum forward speed and -1 maximum reverse speed.
+2. Yaw - Used to turn the robot perpendicular to the surface. This is for directional control
 
 The HandMotion should be able to:
 
