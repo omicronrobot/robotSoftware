@@ -20,10 +20,27 @@ void Drive::init(int stepperSpeed, float period)
     this->_bottom_right.setPeriod(period);
     this->_stepper.setSpeed(stepperSpeed);
 }
+// We rotate 180. If we want to drive reverse we change the speed to negative
 void Drive::drive(float pitch, uint16_t yaw)
 {
-    this->_change_speed(pitch);
-    this->_change_direction(yaw);
+    if ((yaw >= 270) && (yaw <= 360))
+    {
+        if (pitch <= 0)
+        {
+            this->_change_speed(pitch);
+            this->_change_direction(yaw - 180);
+        }
+        else
+        {
+            this->_change_speed(pitch * -1);
+            this->_change_direction(yaw - 180);
+        }
+    }
+    else
+    {
+        this->_change_speed(pitch);
+        this->_change_direction(yaw);
+    }
 }
 
 void Drive::_change_direction(uint16_t direction)
