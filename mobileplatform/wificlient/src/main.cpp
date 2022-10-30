@@ -5,6 +5,7 @@
 #include <SoftwareSerial.h>
 #include <SerialTransfer.h>
 #include <ArduinoJson.h>
+#include <string.h>
 
 #define WLAN_SSID "wifi_name"
 #define WLAN_PASSWORD "wifi_password"
@@ -29,9 +30,9 @@
 
 struct Data
 {
-  float pitch; // Rotation around the side-to-side axis
-  float roll;  // Rotation around the front-to-back axis
-  float yaw;   // Rotation around the vertical axis
+  float pitch;    // The pitch for speed control of the robot. Speed is either max forward or zero or max revers. float -1 to +1.
+  uint16_t yaw;   // Yaw used to control the direction of the robot. Rotation about perpendicular axis to the floor. Int 0 to 360.
+  char *metadata; // The metadata of the message. It can be used to add any payload to the message for example the publisher.
 };
 
 WiFiEventHandler _wifi_connect_handler;
@@ -76,9 +77,6 @@ void _on_MQTT_connect(bool sessionPresent)
   uint16_t packetIdSub = _mqtt_client.subscribe(MQTT_TOPIC, 2);
   debug("Subscribing at QoS 2, packetId: ");
   debugln(packetIdSub);
-  uint16_t packetIdPub = _mqtt_client.publish(MQTT_TOPIC, 2, true, "test 3");
-  debug("Publishing at QoS 2, packetId: ");
-  debugln(packetIdPub);
 }
 
 void onMqttDisconnect(AsyncMqttClientDisconnectReason reason)
@@ -114,12 +112,14 @@ void SendData(char *string_data)
   {
     return;
   }
-  data.roll = doc["roll"];
   data.pitch = doc["pitch"];
   data.yaw = doc["yaw"];
+  String pitch = String(data.pitch, 1);
+  String yaw = String(data.yaw);
+  String senddata = pitch + yaw;
   if (_esp_serial.available() > 0)
   {
-    _serial_transfer.txObj(data, _send_size);
+    _serial_transfer.txObj(senddata, _send_size);
     _serial_transfer.sendData(_send_size);
   }
 }
