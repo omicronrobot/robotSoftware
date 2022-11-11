@@ -29,9 +29,14 @@
 
 
 //output pins 
-#define LED_PIN         16//2  //LED PIN INTERNAL
-#define TRIGGER_PIN      0  //Force reset
+#define OnBoard_LED_PIN  2   // OnBoard_LEDLED PIN 
+#define LED_PIN          2//13  // LED PIN  
+#define TRIGGER_PIN      0   // Force reset push button pin
 
+#define blinkRate_wm  150     // ms blink rate while waiting for wifimanager button wiFi change
+#define blinkRate_ws  1000    // ms blink rate while working successfully  
+
+#define Yaw_Offset    0.5    // yaw offset for calibration         
 /* 
   ======= ==========    ====================================================
   VCC     VU (5V USB)   3.3V 
