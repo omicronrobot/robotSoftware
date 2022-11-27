@@ -54,7 +54,7 @@ private:
     int map(int x, int in_min, int in_max, int out_min, int out_max);
 
 public:
-    Drive(DrivePins drivePins, StepperPins stepperPins, uint16_t steps_per_rev, uint16_t step_number, uint8_t stepper_direction);
+    Drive(DrivePins drivePins, StepperPins stepperPins, uint16_t steps_per_rev);
     void init(int stepperSpeed, float period);
     void drive(float pitch, uint16_t yaw);
 };

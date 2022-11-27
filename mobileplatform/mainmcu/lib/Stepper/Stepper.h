@@ -45,7 +45,7 @@ private:
     void stepMotor(uint16_t this_step);
 
 public:
-    Stepper(uint16_t number_of_steps, uint16_t step_number, uint8_t direction, PinName motor_pin_1, PinName motor_pin_2, PinName motor_pin_3, PinName motor_pin_4);
+    Stepper(uint16_t number_of_steps, PinName motor_pin_1, PinName motor_pin_2, PinName motor_pin_3, PinName motor_pin_4);
     void setSpeed(uint16_t speed);
     void step(int16_t number_of_steps);
 };

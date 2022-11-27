@@ -1,6 +1,6 @@
 #include "Drive.h"
 
-Drive::Drive(DrivePins drivePins, StepperPins stepperPins, uint16_t steps_per_rev, uint16_t step_number, uint8_t stepper_direction) : _top_left(drivePins.TopLeft.IN1, drivePins.TopLeft.IN2), _top_right(drivePins.TopRight.IN1, drivePins.TopRight.IN2), _bottom_left(drivePins.BottomLeft.IN1, drivePins.BottomLeft.IN2), _bottom_right(drivePins.BottomRight.IN1, drivePins.BottomRight.IN2), _stepper(steps_per_rev, step_number, stepper_direction, stepperPins.S1, stepperPins.S2, stepperPins.S3, stepperPins.S4)
+Drive::Drive(DrivePins drivePins, StepperPins stepperPins, uint16_t steps_per_rev) : _top_left(drivePins.TopLeft.IN1, drivePins.TopLeft.IN2), _top_right(drivePins.TopRight.IN1, drivePins.TopRight.IN2), _bottom_left(drivePins.BottomLeft.IN1, drivePins.BottomLeft.IN2), _bottom_right(drivePins.BottomRight.IN1, drivePins.BottomRight.IN2), _stepper(steps_per_rev, stepperPins.S1, stepperPins.S2, stepperPins.S3, stepperPins.S4)
 {
     this->_steps_per_rev = steps_per_rev;
     DigitalOut _top_left_en(drivePins.TopLeft.ENA);
