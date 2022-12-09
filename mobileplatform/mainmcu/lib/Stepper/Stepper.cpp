@@ -1,95 +1,103 @@
 #include "Stepper.h"
 
-Stepper::Stepper(uint16_t number_of_steps, PinName motor_pin_1, PinName motor_pin_2, PinName motor_pin_3, PinName motor_pin_4) : _motor_pin_1(motor_pin_1), _motor_pin_2(motor_pin_2), _motor_pin_3(motor_pin_3), _motor_pin_4(motor_pin_4)
+Stepper::Stepper(int number_of_steps, float delay_time, PinName motor_pin_1, PinName motor_pin_2, PinName motor_pin_3, PinName motor_pin_4) : _motor_pin_1(motor_pin_1), _motor_pin_2(motor_pin_2), _motor_pin_3(motor_pin_3), _motor_pin_4(motor_pin_4)
 {
-  this->_step_number = 0;                   // which step the motor is on
-  this->_direction = 0;                     // motor direction
-  this->_last_step_time = 0;                // timestamp in us of the last step taken
-  this->_number_of_steps = number_of_steps; // total number of steps for this motor
+    this->time_delay = delay_time;
+    this->no_steps = number_of_steps;
 }
 
-void Stepper::setSpeed(uint16_t whatSpeed)
+void Stepper::stepperDrive(int angle)
 {
-  this->_step_delay = 60L * 1000L * 1000L / this->_number_of_steps / whatSpeed;
-}
-
-void Stepper::step(int16_t steps_to_move)
-{
-  int steps_left = abs(steps_to_move); // how many steps to take
-
-  // determine direction based on whether steps_to_mode is + or -:
-  if (steps_to_move > 0)
-  {
-    this->_direction = 1;
-  }
-  if (steps_to_move < 0)
-  {
-    this->_direction = 0;
-  }
-
-  // decrement the number of steps, moving one step each time:
-  while (steps_left > 0)
-  {
-    uint64_t now = us_ticker_read();
-    // move only if the appropriate delay has passed:
-    if (now - this->_last_step_time >= this->_step_delay)
+    if (angle < 180)
     {
-      // get the timeStamp of when you stepped:
-      this->_last_step_time = now;
-      // increment or decrement the step number,
-      // depending on direction:
-      if (this->_direction == 1)
-      {
-        this->_step_number++;
-        if (this->_step_number == this->_number_of_steps)
-        {
-          this->_step_number = 0;
-        }
-      }
-      else
-      {
-        if (this->_step_number == 0)
-        {
-          this->_step_number = this->_number_of_steps;
-        }
-        this->_step_number--;
-      }
-      // decrement the steps left:
-      steps_left--;
-
-      stepMotor(this->_step_number % 4);
+        this->forward(this->stepper_map(angle, 0, 180, 0, this->no_steps));
     }
-  }
+    if (angle > 180)
+    {
+        this->reverse(this->stepper_map(angle - 180, 0, 180, 0, this->no_steps));
+    }
+    this->previous_step = angle;
 }
 
-void Stepper::stepMotor(uint16_t thisStep)
+void Stepper::reverse(int steps)
 {
+    while (1)
+    {
+        this->_motor_pin_1 = 0;
+        this->_motor_pin_2 = 1;
+        this->_motor_pin_3 = 1;
+        this->_motor_pin_4 = 0;
+        wait(this->time_delay);
+        steps--;
+        if (steps < 1)
+            break;
+        this->_motor_pin_1 = 0;
+        this->_motor_pin_2 = 1;
+        this->_motor_pin_3 = 0;
+        this->_motor_pin_4 = 1;
+        wait(this->time_delay);
+        steps--;
+        if (steps < 1)
+            break;
+        this->_motor_pin_1 = 1;
+        this->_motor_pin_2 = 0;
+        this->_motor_pin_3 = 0;
+        this->_motor_pin_4 = 1;
+        wait(this->time_delay);
+        steps--;
+        if (steps < 1)
+            break;
+        this->_motor_pin_1 = 1;
+        this->_motor_pin_2 = 0;
+        this->_motor_pin_3 = 1;
+        this->_motor_pin_4 = 0;
+        wait(this->time_delay);
+        steps--;
+        if (steps < 1)
+            break;
+    }
+}
 
-  switch (thisStep)
-  {
-  case 0: // 1010
-    _motor_pin_1.write(1);
-    _motor_pin_2.write(0);
-    _motor_pin_3.write(1);
-    _motor_pin_4.write(0);
-    break;
-  case 1: // 0110
-    _motor_pin_1.write(0);
-    _motor_pin_2.write(1);
-    _motor_pin_3.write(1);
-    _motor_pin_4.write(0);
-    break;
-  case 2: // 0101
-    _motor_pin_1.write(0);
-    _motor_pin_2.write(1);
-    _motor_pin_3.write(0);
-    _motor_pin_4.write(1);
-    break;
-  case 3: // 1001
-    _motor_pin_1.write(1);
-    _motor_pin_2.write(0);
-    _motor_pin_3.write(0);
-    _motor_pin_4.write(1);
-    break;
-  }
+void Stepper::forward(int steps)
+{
+    while (1)
+    {
+        this->_motor_pin_1 = 1;
+        this->_motor_pin_2 = 0;
+        this->_motor_pin_3 = 1;
+        this->_motor_pin_4 = 0;
+        wait(this->time_delay);
+        steps--;
+        if (steps < 1)
+            break;
+        this->_motor_pin_1 = 1;
+        this->_motor_pin_2 = 0;
+        this->_motor_pin_3 = 0;
+        this->_motor_pin_4 = 1;
+        wait(this->time_delay);
+        steps--;
+        if (steps < 1)
+            break;
+        this->_motor_pin_1 = 0;
+        this->_motor_pin_2 = 1;
+        this->_motor_pin_3 = 0;
+        this->_motor_pin_4 = 1;
+        wait(time_delay);
+        steps--;
+        if (steps < 1)
+            break;
+        this->_motor_pin_1 = 0;
+        this->_motor_pin_2 = 1;
+        this->_motor_pin_3 = 1;
+        this->_motor_pin_4 = 0;
+        wait(this->time_delay);
+        steps--;
+        if (steps < 1)
+            break;
+    }
+}
+
+int Stepper::stepper_map(int x, int in_min, int in_max, int out_min, int out_max)
+{
+    return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }

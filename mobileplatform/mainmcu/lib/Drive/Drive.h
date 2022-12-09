@@ -46,16 +46,15 @@ private:
     Motor _top_right;
     Motor _bottom_left;
     Motor _bottom_right;
-    int _steps_per_rev;
     Stepper _stepper;
-    void _change_direction(uint16_t direction);
+    void _change_angle(uint16_t angle);
     void _change_speed(float speed);
     void _brake();
     int map(int x, int in_min, int in_max, int out_min, int out_max);
 
 public:
-    Drive(DrivePins drivePins, StepperPins stepperPins, uint16_t steps_per_rev);
-    void init(int stepperSpeed, float period);
+    Drive(DrivePins drivePins, StepperPins stepperPins, uint16_t steps_per_rev, float step_delay);
+    void init(float period);
     void drive(float pitch, uint16_t yaw);
 };
 
