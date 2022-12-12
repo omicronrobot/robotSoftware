@@ -18,7 +18,7 @@ DCPins back_left(PB_0, PB_3, PA_8);
 DCPins back_right(PB_1, PB_12, PB_13);
 DrivePins drive_pins(front_left, front_right, back_left, back_right);
 
-Drive drive(drive_pins, stepper_pins, 60);
+Drive drive(drive_pins, stepper_pins, 90, 0.01f);
 Serial serial_mon(PA_9, PA_10, 9600);
 // Serial serial_mon(USB_DM, USB_DP, 9600);
 // Uart uart(USB_DM, USB_DP, 9600);
@@ -28,22 +28,35 @@ int main()
     serial_mon.printf("Program Start\n");
     stepper_1_ena = 1;
     stepper_1_enb = 1;
-    drive.init(50, 0.1f);
-    float count = 0.0;
+    drive.init(0.1f);
+    int yaw_i = 90;
+    int yaw_j = 270;
+    int count = 0;
+    int current = 1;
     while (1)
     {
         // Data data = uart.ReceiveData();
         Data data;
-        data.pitch = count;
-        data.yaw = 90;
-        serial_mon.printf("%f\n", data.pitch);
-        drive.drive(data.pitch, data.yaw);
-        // onboard_led = !onboard_led;
-        wait(5);
-        count = count + 0.1;
-        if (count >= 1.0)
+        if (current == 1)
         {
-            count = -1.0;
+            data.yaw = yaw_i;
+        }
+        if (current == 0)
+        {
+            data.yaw = yaw_j;
+        }
+        data.pitch = 0.5;
+        if (count > 1)
+        {
+            data.yaw = 0;
+        }
+        serial_mon.printf("Count = %d ----- %d\n", count, data.yaw);
+        drive.drive(data.pitch, data.yaw);
+        count = count + 1;
+        if (count > 100)
+        {
+            count = 0;
+            current = !current;
         }
     }
 }
