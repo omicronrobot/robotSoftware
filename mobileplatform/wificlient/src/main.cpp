@@ -1,158 +1,171 @@
-#include "Arduino.h"
-#include <ESP8266WiFi.h>
-#include <Ticker.h>
-#include <AsyncMqttClient.h>
-#include <SoftwareSerial.h>
-#include <SerialTransfer.h>
+#include <WiFi.h>
+#include <ESPmDNS.h>
+#include <WiFiUdp.h>
+#include <ArduinoOTA.h>
+#include <PubSubClient.h>
 #include <ArduinoJson.h>
-#include <string.h>
+#include <SoftwareSerial.h>
 
-#define WLAN_SSID "wifi_name"
-#define WLAN_PASSWORD "wifi_password"
-#define MQTT_TOPIC "mqtt_topic"
-#define MQTT_HOST "mqtt_host"
-#define MQTT_PORT 1883
-#define RX_PIN 1
-#define TX_PIN 2
-#define UART_BAUDRATE 9600
-#define SERIAL_BAUDRATE 115200
+const char *ssid = "0x6f736f646f-rodney-osodo";
+const char *password = "Omicron1234";
+const char *mqttServer = "10.42.0.1";
+const int mqttPort = 1883;
+const char *mqttUser = "cfc7a6c8-941e-4d72-be17-dbcc24b17fa3";
+const char *mqttPassword = "7686eb82-d6b5-4513-b559-d867c8ed85e3";
+const char *mqttTopic = "channels/fadfba2a-297c-49ef-87f3-c3b4745ce2ec/messages";
 
-#define DEBUG 1
-#if DEBUG == 1
-#define debug(x) Serial.print(x)
-#define debugln(x) Serial.println(x)
-#define debugf(x, y) Serial.printf(x, y)
-#else
-#define debug(x)
-#define debugln(x)
-#define debugf(x, y)
-#endif
-
-struct Data
-{
-  float pitch;    // The pitch for speed control of the robot. Speed is either max forward or zero or max revers. float -1 to +1.
-  uint16_t yaw;   // Yaw used to control the direction of the robot. Rotation about perpendicular axis to the floor. Int 0 to 360.
-  char *metadata; // The metadata of the message. It can be used to add any payload to the message for example the publisher.
-};
-
-WiFiEventHandler _wifi_connect_handler;
-WiFiEventHandler _wifi_disconnect_handler;
-AsyncMqttClient _mqtt_client;
-Ticker _mqtt_reconnect_timer;
-Ticker _wifi_reconnect_timer;
-SerialTransfer _serial_transfer;
-SoftwareSerial _esp_serial(RX_PIN, TX_PIN);
-uint16_t _send_size = 0;
-
-void _connect_to_WiFi()
-{
-  debugln("Connecting to Wi-Fi...");
-  WiFi.begin(WLAN_SSID, WLAN_PASSWORD);
-}
-
-void _connect_to_MQTT()
-{
-  debugln("Connecting to MQTT...");
-  _mqtt_client.connect();
-}
-
-void _on_WiFi_connect(const WiFiEventStationModeGotIP &event)
-{
-  debugln("Connected to Wi-Fi.");
-  _connect_to_MQTT();
-}
-
-void _on_WiFi_disconnect(const WiFiEventStationModeDisconnected &event)
-{
-  debugln("Disconnected from Wi-Fi.");
-  _mqtt_reconnect_timer.detach(); // ensure we don't reconnect to MQTT while reconnecting to Wi-Fi
-  _wifi_reconnect_timer.once(2, _connect_to_WiFi);
-}
-
-void _on_MQTT_connect(bool sessionPresent)
-{
-  debugln("Connected to MQTT.");
-  debug("Session present: ");
-  debugln(sessionPresent);
-  uint16_t packetIdSub = _mqtt_client.subscribe(MQTT_TOPIC, 2);
-  debug("Subscribing at QoS 2, packetId: ");
-  debugln(packetIdSub);
-}
-
-void onMqttDisconnect(AsyncMqttClientDisconnectReason reason)
-{
-  debugf("Disconnected from MQTT: %u.\n", static_cast<uint8_t>(reason));
-
-  if (WiFi.isConnected())
-  {
-    _mqtt_reconnect_timer.once(2, _connect_to_MQTT);
-  }
-}
-
-void onMqttSubscribe(uint16_t packetId, uint8_t qos)
-{
-  debugln("Subscribe acknowledged.");
-  debug("  packetId: ");
-  debugln(packetId);
-}
-
-void onMqttUnsubscribe(uint16_t packetId)
-{
-  debugln("Unsubscribe acknowledged.");
-  debug("  packetId: ");
-  debugln(packetId);
-}
-
-void SendData(char *string_data)
-{
-  Data data;
-  StaticJsonDocument<256> doc;
-  DeserializationError error = deserializeJson(doc, string_data);
-  if (error)
-  {
-    return;
-  }
-  data.pitch = doc["pitch"];
-  data.yaw = doc["yaw"];
-  String pitch = String(data.pitch, 1);
-  String yaw = String(data.yaw);
-  String senddata = pitch + yaw;
-  if (_esp_serial.available() > 0)
-  {
-    _serial_transfer.txObj(senddata, _send_size);
-    _serial_transfer.sendData(_send_size);
-  }
-}
-
-void onMqttMessage(char *topic, char *payload, AsyncMqttClientMessageProperties properties, size_t len, size_t index, size_t total)
-{
-  debugln("Publish received.");
-  debug("  topic: ");
-  debugln(topic);
-  SendData(payload);
-}
+WiFiClient wifiClient;
+PubSubClient client(wifiClient);
+SoftwareSerial mainmcuserial(18, 21);
 
 void setup()
 {
-  pinMode(RX_PIN, INPUT);
-  pinMode(TX_PIN, OUTPUT);
-  _esp_serial.begin(UART_BAUDRATE);
-  _serial_transfer.begin(_esp_serial);
-
-  Serial.begin(SERIAL_BAUDRATE);
-
-  _wifi_connect_handler = WiFi.onStationModeGotIP(_on_WiFi_connect);
-  _wifi_disconnect_handler = WiFi.onStationModeDisconnected(_on_WiFi_disconnect);
-
-  _mqtt_client.onConnect(_on_MQTT_connect);
-  _mqtt_client.onDisconnect(onMqttDisconnect);
-  _mqtt_client.onSubscribe(onMqttSubscribe);
-  _mqtt_client.onUnsubscribe(onMqttUnsubscribe);
-  _mqtt_client.onMessage(onMqttMessage);
-  _mqtt_client.setServer(MQTT_HOST, MQTT_PORT);
-  _connect_to_WiFi();
+  Serial.begin(115200);
+  mainmcuserial.begin(115200);
+  //  while (!Serial) {
+  //    ; // wait for serial port to connect. Needed for native USB port only
+  //  }
+  Serial.println("Booting");
+  connectToWiFi();
+  setupOTA();
+  client.setServer(mqttServer, mqttPort);
+  client.setCallback(callback);
 }
 
 void loop()
 {
+  ArduinoOTA.handle();
+  if (!client.connected())
+  {
+    connectToMQTT();
+  }
+  client.loop();
+}
+
+void connectToWiFi()
+{
+  int n = WiFi.scanNetworks();
+  Serial.println("scan done");
+  if (n == 0)
+  {
+    Serial.println("no networks found");
+  }
+  else
+  {
+    Serial.print(n);
+    Serial.println(" networks found");
+    for (int i = 0; i < n; ++i)
+    {
+      Serial.print(i + 1);
+      Serial.print(": ");
+      Serial.print(WiFi.SSID(i));
+      Serial.print(" (");
+      Serial.print(WiFi.RSSI(i));
+      Serial.print(")");
+      Serial.println((WiFi.encryptionType(i) == WIFI_AUTH_OPEN) ? " " : "*");
+      delay(10);
+    }
+  }
+  Serial.println("");
+
+  delay(2000);
+
+  Serial.print("Connecting to ");
+  Serial.println(ssid);
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(ssid, password);
+  Serial.println("Connecting to WiFi ..");
+  while (WiFi.status() != WL_CONNECTED)
+  {
+    Serial.println("Connection Failed! Rebooting...");
+    delay(2000);
+  }
+
+  Serial.println();
+  Serial.print("Connected to WiFi. IP address: ");
+  Serial.println(WiFi.localIP());
+}
+
+void connectToMQTT()
+{
+  Serial.println("Connecting to MQTT...");
+  while (!client.connected())
+  {
+    if (client.connect("omicron-wificlient", mqttUser, mqttPassword))
+    {
+      Serial.println("Connected to MQTT.");
+      client.subscribe(mqttTopic);
+    }
+    else
+    {
+      Serial.print("Failed to connect to MQTT. Error code: ");
+      Serial.println(client.state());
+      delay(2000);
+    }
+  }
+}
+
+void setupOTA()
+{
+  ArduinoOTA.setPort(3232);
+  ArduinoOTA.setHostname("omicron-wificlient");
+  ArduinoOTA
+      .onStart([]()
+               {
+    String type;
+    if (ArduinoOTA.getCommand() == U_FLASH)
+      type = "sketch";
+    else // U_SPIFFS
+      type = "filesystem";
+
+    // NOTE: if updating SPIFFS this would be the place to unmount SPIFFS using SPIFFS.end()
+    Serial.println("Start updating " + type); })
+      .onEnd([]()
+             { Serial.println("\nEnd"); })
+      .onProgress([](unsigned int progress, unsigned int total)
+                  { Serial.printf("Progress: %u%%\r", (progress / (total / 100))); })
+      .onError([](ota_error_t error)
+               {
+    Serial.printf("Error[%u]: ", error);
+    if (error == OTA_AUTH_ERROR) Serial.println("Auth Failed");
+    else if (error == OTA_BEGIN_ERROR) Serial.println("Begin Failed");
+    else if (error == OTA_CONNECT_ERROR) Serial.println("Connect Failed");
+    else if (error == OTA_RECEIVE_ERROR) Serial.println("Receive Failed");
+    else if (error == OTA_END_ERROR) Serial.println("End Failed"); });
+
+  ArduinoOTA.begin();
+  Serial.println("Ready");
+  Serial.print("IP address: ");
+  Serial.println(WiFi.localIP());
+}
+
+void callback(char *topic, byte *payload, unsigned int length)
+{
+  String spayload = (char *)payload;
+  const size_t capacity = JSON_ARRAY_SIZE(2) + JSON_OBJECT_SIZE(3) + JSON_OBJECT_SIZE(4) + 90;
+  DynamicJsonBuffer jsonBuffer(capacity);
+  JsonArray &root = jsonBuffer.parseArray(spayload);
+  JsonObject &root_0 = root[0];
+  JsonObject &root_1 = root[1];
+  float pitch = root_0["v"];
+  int yaw = root_1["v"];
+  //  mainmcuserial.print("pitch:");
+  mainmcuserial.print(pitch, 2);
+  mainmcuserial.print(":");
+  mainmcuserial.println(format_yaw(yaw));
+  Serial.print("pitch:");
+  Serial.print(pitch, 2);
+  Serial.print("yaw:");
+  Serial.println(format_yaw(yaw));
+}
+
+String format_yaw(int yaw)
+{
+  String zeros = "";
+  if (yaw < 100)
+    zeros += "0";
+  if (yaw < 10)
+    zeros += "0";
+  zeros += yaw;
+  return zeros;
 }
