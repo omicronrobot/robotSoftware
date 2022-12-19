@@ -29,8 +29,8 @@ int main()
     stepper_1_ena = 1;
     stepper_1_enb = 1;
     drive.init(0.1f);
-    int yaw_i = 90;
-    int yaw_j = 270;
+    int yaw_i = 45;
+    int yaw_j = 225;
     int count = 0;
     int current = 1;
     while (1)
@@ -45,7 +45,7 @@ int main()
         {
             data.yaw = yaw_j;
         }
-        data.pitch = 0.5;
+        data.pitch = 0.9;
         if (count > 1)
         {
             data.yaw = 0;
